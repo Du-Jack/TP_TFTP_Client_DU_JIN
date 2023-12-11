@@ -34,7 +34,12 @@ int main(int argc, char *argv[]){
     struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
     char ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ipv4->sin_addr), ip_str, INET_ADDRSTRLEN);
-    printf("Server IP: %s\n", ip_str); // Print the IP address
+
+    // Print the Server IP to verify 
+    /*char message[128]; 
+    snprintf(message, sizeof(message),"Server IP: %s\n", ip_str);
+    write(STDOUT_FILENO,message, strlen(message));*/
+
 
     freeaddrinfo(res); // Free the memory allocated
 
