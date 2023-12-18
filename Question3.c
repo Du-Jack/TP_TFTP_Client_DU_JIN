@@ -32,7 +32,7 @@ int main(int argc, char *argv[]){
     struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
     char ip_str[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(ipv4->sin_addr), ip_str, INET_ADDRSTRLEN);
-    //printf("Server IP: %s\n", ip_str); // Print the IP address
+    printf("Server IP: %s\n", ip_str); // Print the IP address
 
     // Create a socket and verify if it has been created
     int sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
@@ -48,6 +48,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
+    close(sockfd);
     freeaddrinfo(res); // Free the memory allocated
 
     return EXIT_SUCCESS;
