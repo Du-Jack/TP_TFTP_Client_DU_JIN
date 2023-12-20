@@ -37,10 +37,15 @@
   The **sendto** function is used to send the RRQ packet to the TFTP server. 
   ***sendto(sockfd, &rrqPacket, sizeof(rrqPacket), 0, server_addr, sizeof(struct sockaddr));*** 
   > sockfd : The socket file descriptor
+
   > &rrqPacket : Pointer to the RRQ packet
+  
   > sizeof(rrqPacket) : Size of the RRQ packet in bytes 
+  
   > 0 : flags 
+  
   > server_addr: Pointer to the server's address structure
+  
   > sizeof(struct sockaddr) : Size of the server's address structure
 
   A Read Request has been captured in **Q4A_RRQSend.png** in the file **Question4**.
@@ -60,10 +65,15 @@
   The ***recvfrom*** function is used to receive the DATA packet from the server. If there is an error, an error message is printed. 
   ***recvfrom(sockfd, data_buffer, MAX_BUFFER_SIZE, 0, server_addr, &server_addr_len)***
   > sockfd : The socket file descriptor
+
   > data_buffer : Pointer to the buffer where the received data will be stored 
+  
   > MAX_BUFFER_SIZE : maximum number of bytes that can be received 
+  
   > 0 : flags 
+  
   > server_addr : Pointer to a variable where the address of the server will be stored 
+  
   > &server_addr_len : pointer to the siez of the server address 
 
   The ACK packet is constructed and the first two bytes are **0x00** and **0x04**, representing the ACK opcode. Then the data buffer is copied into the block before send to the server. If the sending occurs an error, it print an error message. 
