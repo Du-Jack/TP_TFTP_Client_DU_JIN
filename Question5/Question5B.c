@@ -58,71 +58,41 @@ void sendSingleDAT(int sockfd, struct sockaddr *server_addr, socklen_t server_ad
         exit(EXIT_FAILURE);
     }
 
-    // Initialize block number
-    uint16_t block_number = 1;
+    // Prepare the DAT packet
+    char dat_buffer[MAX_BUFFER_SIZE];
+    dat_buffer[0] = 0x00;  // Opcode (2 bytes)
+    dat_buffer[1] = TFTP_OPCODE_DATA;
 
-    while (1) {
-        // Prepare the DAT packet
-        char dat_buffer[MAX_BUFFER_SIZE];
-        dat_buffer[0] = 0x00;  // Opcode (2 bytes)
-        dat_buffer[1] = TFTP_OPCODE_DATA;
+    // Set the block number (assuming it is 1 for simplicity)
+    uint16_t block_number = htons(1);
+    memcpy(dat_buffer + 2, &block_number, sizeof(uint16_t));
 
-        // Set the block number
-        uint16_t network_block_number = htons(block_number);
-        memcpy(dat_buffer + 2, &network_block_number, sizeof(uint16_t));
+    // Read the file content into the DAT packet
+    size_t read_size = fread(dat_buffer + 4, 1, MAX_BUFFER_SIZE - 4, file);
+    fclose(file);
 
-        // Read the file content into the DAT packet
-        size_t read_size = fread(dat_buffer + 4, 1, MAX_BUFFER_SIZE - 4, file);
-
-        // Print debug information
-        printf("Sending DAT packet - Block Number: %d, Data Size: %zu\n", block_number, read_size);
-
-        // Send the DAT packet
-        if (sendto(sockfd, dat_buffer, 4 + read_size, 0, server_addr, server_addr_len) == -1) {
-            perror("Error sending DAT packet");
-            fclose(file);
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
-
-        // Receive the ACK packet
-        struct TFTPAckPacket ack_packet;
-        ssize_t recv_length = recvfrom(sockfd, &ack_packet, sizeof(ack_packet), 0, server_addr, &server_addr_len);
-
-        if (recv_length == -1) {
-            perror("Error receiving ACK packet");
-            fclose(file);
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
-
-        // Print received ACK information
-        printf("Received ACK - Opcode: %d, Block Number: %d\n", ntohs(ack_packet.opcode), ntohs(ack_packet.block_number));
-
-        // Check if the received ACK is for the correct block number
-        if (ack_packet.opcode == htons(TFTP_OPCODE_ACK) && ack_packet.block_number == network_block_number) {
-            printf("File sent successfully for block number %d\n", block_number);
-
-            // If the packet is less than 512 bytes, it is the last packet
-            if (read_size < MAX_BUFFER_SIZE - 4) {
-                break;
-            }
-
-            // Increment the block number for the next packet
-            block_number++;
-        } else {
-            fprintf(stderr, "Error: Unexpected ACK received.\n");
-            fclose(file);
-            close(sockfd);
-            exit(EXIT_FAILURE);
-        }
+    // Send the DAT packet
+    if (sendto(sockfd, dat_buffer, 4 + read_size, 0, server_addr, server_addr_len) == -1) {
+        perror("Error sending DAT packet");
+        close(sockfd);
+        exit(EXIT_FAILURE);
     }
 
-    fclose(file);
+    // Receive the ACK packet
+    struct TFTPAckPacket ack_packet;
+    ssize_t recv_length = recvfrom(sockfd, &ack_packet, sizeof(ack_packet), 0, server_addr, &server_addr_len);
+
+    if (recv_length == -1) {
+        perror("Error receiving ACK packet");
+        close(sockfd);
+        exit(EXIT_FAILURE);
+    }
+
+    // Check if the received ACK is for the correct block number
+    if (ack_packet.opcode == htons(TFTP_OPCODE_ACK) && ack_packet.block_number == block_number) {
+        printf("File sent successfully.\n");
+    }
 }
-
-
-
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {

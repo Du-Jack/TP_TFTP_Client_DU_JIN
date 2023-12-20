@@ -61,6 +61,7 @@ void sendFile(int sockfd, struct sockaddr *server_addr, socklen_t server_addr_le
     uint16_t block_number = 1;
 
     while (1) {
+        // Prepare the DAT packet
         char dat_buffer[MAX_BUFFER_SIZE];
         dat_buffer[0] = 0x00;  // Opcode (2 bytes)
         dat_buffer[1] = TFTP_OPCODE_DATA;
@@ -91,23 +92,21 @@ void sendFile(int sockfd, struct sockaddr *server_addr, socklen_t server_addr_le
             exit(EXIT_FAILURE);
         }
 
-        // Print received ACK information
-        printf("Received ACK - Opcode: %d, Block Number: %d\n", ntohs(ack_packet.opcode), ntohs(ack_packet.block_number));
-
         // Check if the received ACK is for the correct block number
         if (ack_packet.opcode == htons(TFTP_OPCODE_ACK) && ack_packet.block_number == block_number) {
-            // Increment the block number for the next packet
-            block_number++;
-
-            // If the packet is less than 512 bytes, it is the last packet
-            if (read_size < MAX_BUFFER_SIZE - 4) {
-                break;
-            }
+            printf("Received ACK for block number %d\n", block_number);
         } else {
-            fprintf(stderr, "Error: Unexpected ACK received.\n");
             fclose(file);
             close(sockfd);
             exit(EXIT_FAILURE);
+        }
+
+        // Increment the block number for the next packet
+        block_number++;
+
+        // Check if it's the last block of data
+        if (read_size < MAX_BUFFER_SIZE - 4) {
+            break;
         }
     }
 
