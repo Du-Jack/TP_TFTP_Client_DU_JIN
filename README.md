@@ -80,3 +80,28 @@
   The receiveFile function receives DAT packets, sends corresponding ACK packets to the server and wirtes the received data into a file until the last packet is received. 
   
   The function has been tested with **ensea.png** and captured with wireshark **cf. Q4C_ensea.png** in the file **Question4**
+
+
+ ## Question 5 : For puttftp
+
+  ### Question 5a : Build a properly formed Write Request (WRQ) and send it to the server
+
+  The sendWRQ function is very similar to the sendRRQ function, except the opcode. 
+  The Write Request is send with the **sendto** function. 
+
+  A Write Request has been captured in **Q5A_WRQ.png** in the file **Question5**.
+
+  ### Question 5b : Send a file consisting of a single Data (DAT) packet and receive its acknowledgment (ACK)
+
+  The sendSingleDAT function send a single DAT packet to the server and verify te correctness of the received ACK packet. 
+
+  **DATA packet**
+  The DATA packet is prepared with the fist 2 byto being set to **0x00** and **0x03** representing the DATA opcode. 
+  Then the 2 byte for block is initialised to 1 for simplicity and is send. 
+
+  **ACK packet** 
+  The function **recvfrom** is used here as before to receive an ACK packet, and check if the ACK packet matches with the expected block number. Ohterwise, an error message is print. 
+
+  ### Question 5c : Send a file consisting of multiple Data (DAT) packets and receive their respective acknowledgments (ACK).
+
+  The **sendFile** function prepare the DAT packet, set the block number for each packet, send the DATA, receive and check the ACK packet and increment the block number until the last block of DATA. 
